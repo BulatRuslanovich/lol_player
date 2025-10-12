@@ -8,30 +8,29 @@ use walkdir::WalkDir;
 pub struct AudioPlayer {
     sink: Arc<Mutex<Sink>>,
     _stream: Arc<OutputStream>,
-    current_file: Arc<Mutex<Option<PathBuf>>>,
-    songs: Arc<Mutex<Vec<PathBuf>>>,
+    songs: Arc<Mutex<Vec<(u32, PathBuf)>>>,
+    current_index: Arc<Mutex<u32>>,
 }
 
 impl AudioPlayer {
-    /// Создаёт новый аудиоплеер
     pub fn new() -> Self {
         let stream =
-            OutputStreamBuilder::open_default_stream()
-                .expect("Не удалось открыть аудио-поток");
+            OutputStreamBuilder::open_default_stream().expect("Не удалось открыть аудио-поток");
         let sink = Sink::connect_new(&stream.mixer());
 
         AudioPlayer {
             sink: Arc::new(Mutex::new(sink)),
             _stream: Arc::new(stream),
-            current_file: Arc::new(Mutex::new(None)),
             songs: Arc::new(Mutex::new(Vec::new())),
+            current_index: Arc::new(Mutex::new(0)),
         }
     }
 
-    /// Загружает все аудиофайлы из указанной директории
     pub fn load_songs_from_dir(&self, dir: &str) {
         let mut songs = self.songs.lock().unwrap();
+
         songs.clear();
+        let mut index = 0;
 
         for entry in WalkDir::new(dir)
             .follow_links(true)
@@ -41,28 +40,25 @@ impl AudioPlayer {
             let path = entry.path();
             if let Some(ext) = path.extension() {
                 let ext = ext.to_string_lossy().to_lowercase();
-                if ext == "mp3" || ext == "wav" || ext == "flac" || ext == "ogg" {
-                    songs.push(path.to_path_buf());
+                if ext == "mp3" {
+                    songs.push((index, path.to_path_buf()));
+                    index += 1;
                 }
             }
         }
     }
 
-    /// Воспроизводит указанный файл
-    pub fn play(&self, file_path: &PathBuf) {
+    pub fn play_by_file(&self, file_path: &PathBuf) {
         if let Ok(file) = File::open(file_path) {
             if let Ok(source) = Decoder::new(BufReader::new(file)) {
                 let sink = self.sink.lock().unwrap();
                 sink.stop();
                 sink.append(source);
                 sink.play();
-
-                *self.current_file.lock().unwrap() = Some(file_path.clone());
             }
         }
     }
 
-    /// Ставит на паузу или возобновляет воспроизведение
     pub fn pause(&self) {
         let sink = self.sink.lock().unwrap();
         if sink.is_paused() {
@@ -72,19 +68,7 @@ impl AudioPlayer {
         }
     }
 
-    /// Останавливает воспроизведение
-    pub fn stop(&self) {
-        let sink = self.sink.lock().unwrap();
-        sink.stop();
-    }
-
-    /// Возвращает список всех загруженных песен
-    pub fn get_songs(&self) -> Vec<PathBuf> {
+    pub fn get_songs(&self) -> Vec<(u32, PathBuf)> {
         self.songs.lock().unwrap().clone()
-    }
-
-    /// Возвращает текущий воспроизводимый файл
-    pub fn get_current_file(&self) -> Option<PathBuf> {
-        self.current_file.lock().unwrap().clone()
     }
 }

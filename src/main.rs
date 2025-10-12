@@ -1,8 +1,8 @@
 mod player;
 mod ui;
 
-use gtk::prelude::*;
 use gtk::Application;
+use gtk::prelude::*;
 
 fn main() {
     let app = Application::builder()
