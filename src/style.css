@@ -1,0 +1,263 @@
+/* Tokyo Night Color Palette */
+@define-color bg #1a1b26;
+@define-color bg_dark #16161e;
+@define-color bg_highlight #1f2335;
+@define-color bg_popup #1f2335;
+@define-color fg #c0caf5;
+@define-color fg_dark #a9b1d6;
+@define-color fg_gutter #3b4261;
+@define-color dark3 #545c7e;
+@define-color blue0 #3d59a1;
+@define-color blue1 #7aa2f7;
+@define-color blue2 #2ac3de;
+@define-color cyan #7dcfff;
+@define-color blue5 #89ddff;
+@define-color blue6 #b4f9f8;
+@define-color magenta #bb9af7;
+@define-color purple #9d7cd8;
+@define-color orange #ff9e64;
+@define-color yellow #e0af68;
+@define-color green #9ece6a;
+@define-color green1 #73daca;
+@define-color teal #1abc9c;
+@define-color red #f7768e;
+@define-color red1 #db4b4b;
+
+/* Основные стили */
+window {
+    background: @bg;
+    color: @fg;
+}
+
+.main-container {
+    background: @bg_highlight;
+    border-radius: 16px;
+    margin: 20px;
+    padding: 24px;
+    border: 1px solid @blue0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Заголовок */
+.header {
+    background: linear-gradient(135deg, @blue0 0%, @magenta 100%);
+    color: @fg;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid @blue1;
+    box-shadow: 0 4px 16px rgba(122, 162, 247, 0.2);
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: @fg;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Текущая песня */
+.current-song {
+    background: linear-gradient(135deg, @purple 0%, @red 100%);
+    color: @fg;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    border: 1px solid @magenta;
+    box-shadow: 0 4px 16px rgba(187, 154, 247, 0.2);
+    min-height: 20px;
+}
+
+/* Список песен */
+scrolledwindow {
+    background: @bg_popup;
+    border-radius: 12px;
+    margin: 12px 0;
+    border: 1px solid @blue0;
+}
+
+listbox {
+    background: transparent;
+    border-radius: 12px;
+}
+
+listrow {
+    background: transparent;
+    border-bottom: 1px solid @bg_dark;
+    padding: 14px 16px;
+    transition: all 0.2s ease;
+    color: @fg_dark;
+}
+
+listrow:hover {
+    background: @bg_popup;
+    color: @fg;
+    transform: translateX(4px);
+}
+
+listrow:selected {
+    background: linear-gradient(135deg, @blue1 0%, @cyan 100%);
+    color: @bg;
+    border-radius: 8px;
+    margin: 4px;
+    border: 1px solid @blue2;
+    box-shadow: 0 4px 12px rgba(122, 162, 247, 0.3);
+}
+
+/* Кнопки управления */
+.controls-box {
+    background: @bg_popup;
+    border-radius: 24px;
+    padding: 16px;
+    margin-top: 20px;
+    border: 1px solid @blue0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn {
+    background: linear-gradient(135deg, @blue1 0%, @cyan 100%);
+    color: @bg;
+    border: none;
+    border-radius: 50%;
+    min-width: 52px;
+    min-height: 52px;
+    font-size: 18px;
+    margin: 0 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(122, 162, 247, 0.3);
+    font-weight: bold;
+}
+
+.control-btn:hover {
+    background: linear-gradient(135deg, @cyan 0%, @blue2 100%);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(42, 195, 222, 0.4);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.play-btn {
+    background: linear-gradient(135deg, @green 0%, @green1 100%);
+    min-width: 64px;
+    min-height: 64px;
+    font-size: 22px;
+    box-shadow: 0 4px 16px rgba(158, 206, 106, 0.3);
+}
+
+.play-btn:hover {
+    background: linear-gradient(135deg, @green1 0%, @teal 100%);
+    box-shadow: 0 6px 20px rgba(115, 218, 202, 0.4);
+}
+
+.load-btn {
+    background: linear-gradient(135deg, @magenta 0%, @purple 100%);
+    border-radius: 20px;
+    min-width: 140px;
+    min-height: 44px;
+    font-size: 14px;
+    margin-left: 20px;
+    box-shadow: 0 4px 12px rgba(187, 154, 247, 0.3);
+}
+
+.load-btn:hover {
+    background: linear-gradient(135deg, @purple 0%, @blue0 100%);
+    box-shadow: 0 6px 16px rgba(157, 124, 216, 0.4);
+}
+
+/* Номера песен */
+.song-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: @blue1;
+    opacity: 0.8;
+}
+
+listrow:selected .song-number {
+    color: @bg;
+    opacity: 1;
+}
+
+/* Анимация для текущей песни */
+@keyframes tokyo-glow {
+    0% { 
+        box-shadow: 0 4px 16px rgba(187, 154, 247, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 6px 24px rgba(187, 154, 247, 0.4);
+        transform: scale(1.01);
+    }
+    100% { 
+        box-shadow: 0 4px 16px rgba(187, 154, 247, 0.2);
+        transform: scale(1);
+    }
+}
+
+.current-song:not([label='🎵 No song playing']) {
+    animation: tokyo-glow 3s ease-in-out infinite;
+}
+
+/* Полоса прокрутки */
+scrollbar trough {
+    background: @bg_dark;
+    border-radius: 8px;
+    min-width: 12px;
+    min-height: 12px;
+}
+
+scrollbar slider {
+    background: @blue1;
+    border-radius: 8px;
+    min-width: 12px;
+    min-height: 12px;
+}
+
+scrollbar slider:hover {
+    background: @cyan;
+}
+
+/* Диалог выбора файла */
+filechooserwidget {
+    background: @bg_highlight;
+    color: @fg;
+}
+
+filechooserwidget .sidebar {
+    background: @bg_dark;
+    color: @fg_dark;
+}
+
+filechooserwidget button {
+    background: @blue1;
+    color: @bg;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+filechooserwidget button:hover {
+    background: @cyan;
+}
+
+/* Состояния кнопок */
+.control-btn:disabled {
+    background: @dark3;
+    color: @fg_gutter;
+    box-shadow: none;
+    transform: scale(1);
+}
+
+/* Фокус */
+.control-btn:focus {
+    outline: 2px solid @yellow;
+    outline-offset: 2px;
+}
+
+listrow:focus {
+    outline: 2px solid @yellow;
+    outline-offset: -2px;
+}

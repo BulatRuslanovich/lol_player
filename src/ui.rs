@@ -1,84 +1,137 @@
 use crate::player::AudioPlayer;
-use gtk::prelude::*;
+use gtk::{gdk, prelude::*};
 use gtk::{
     Application, ApplicationWindow, Box as GtkBox, Button, FileChooserAction, FileChooserDialog,
     Label, ListBox, Orientation, ResponseType, ScrolledWindow,
 };
+use std::fs;
 use std::sync::Arc;
 
 const DEFAULT_MUSIC_DIR: &str = "/home/bulat/music";
 
 pub fn build_ui(app: &Application) {
     let player = Arc::new(AudioPlayer::new());
-
     player.clone().start_playback_monitor();
 
     let window = create_window(app);
+    setup_styles();
+    
     let main_box = create_main_container();
     let list_box = create_song_list();
     let controls_box = create_controls();
-     let current_song_label = create_current_song_label();
+    let current_song_label = create_current_song_label();
+    let header_box = create_header();
 
+    main_box.append(&header_box);
     main_box.append(&current_song_label);
     main_box.append(&create_scrolled_window(&list_box));
     main_box.append(&controls_box);
+    
     window.set_child(Some(&main_box));
 
     setup_event_handlers(&player, &list_box, &controls_box, &window, &current_song_label);
-
     load_default_songs(&player, &list_box);
-
     window.present();
 }
 
-fn create_current_song_label() -> Label {
-    let label = Label::new(Some("No song playing"));
-    label.set_halign(gtk::Align::Start);
-    label.set_margin_bottom(10);
-    label.add_css_class("title-4"); // Стиль для выделения
-    label
+fn setup_styles() {
+
+    let provider = gtk::CssProvider::new();
+    
+    let css_result = fs::read_to_string("style.css")
+        .or_else(|_| fs::read_to_string("src/style.css"))
+        .or_else(|_| fs::read_to_string("./src/style.css"));
+    
+    match css_result {
+        Ok(css) => {
+            println!("✅ CSS файл загружен успешно");
+            provider.load_from_data(&css);
+        }
+        Err(e) => {
+            println!("{}", e)
+        }
+    }
+    
+    if let Some(display) = gdk::Display::default() {
+        gtk::style_context_add_provider_for_display(
+            &display,
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    }
 }
 
 fn create_window(app: &Application) -> ApplicationWindow {
     ApplicationWindow::builder()
         .application(app)
-        .title("Lol Player")
-        .default_width(600)
-        .default_height(400)
+        .title("🎵 Lol Player")
+        .default_width(800)
+        .default_height(600)
         .build()
 }
 
 fn create_main_container() -> GtkBox {
-    let main_box = GtkBox::new(Orientation::Vertical, 10);
-    main_box.set_margin_top(10);
-    main_box.set_margin_bottom(10);
-    main_box.set_margin_start(10);
-    main_box.set_margin_end(10);
+    let main_box = GtkBox::new(Orientation::Vertical, 0);
+    main_box.add_css_class("main-container");
     main_box
 }
 
+fn create_header() -> GtkBox {
+    let header = GtkBox::new(Orientation::Horizontal, 0);
+    header.add_css_class("header");
+    header.set_margin_bottom(10);
+    
+    let title = Label::new(Some("🎵 Lol Player"));
+    title.add_css_class("header-title");
+    title.set_halign(gtk::Align::Center);
+    title.set_hexpand(true);
+    
+    header.append(&title);
+    header
+}
+
+fn create_current_song_label() -> Label {
+    let label = Label::new(Some("🎵 No song playing"));
+    label.add_css_class("current-song");
+    label.set_halign(gtk::Align::Center);
+    label.set_margin_bottom(10);
+    label
+}
+
 fn create_song_list() -> ListBox {
-    ListBox::new()
+    let list_box = ListBox::new();
+    list_box.set_selection_mode(gtk::SelectionMode::Single);
+    list_box
 }
 
 fn create_scrolled_window(list_box: &ListBox) -> ScrolledWindow {
     let scrolled = ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Never)
-        .min_content_height(250)
+        .vscrollbar_policy(gtk::PolicyType::Automatic)
+        .min_content_height(300)
         .build();
     scrolled.set_child(Some(list_box));
     scrolled
 }
 
 fn create_controls() -> GtkBox {
-    let controls_box = GtkBox::new(Orientation::Horizontal, 5);
+    let controls_box = GtkBox::new(Orientation::Horizontal, 0);
+    controls_box.add_css_class("controls-box");
     controls_box.set_halign(gtk::Align::Center);
-    controls_box.set_margin_top(10);
 
     let prev_btn = Button::with_label("⏮");
+    prev_btn.add_css_class("control-btn");
+    
     let play_pause_btn = Button::with_label("▶");
+    play_pause_btn.add_css_class("control-btn");
+    play_pause_btn.add_css_class("play-btn");
+    
     let next_btn = Button::with_label("⏭");
-    let load_btn = Button::with_label("Load from dir");
+    next_btn.add_css_class("control-btn");
+    
+    let load_btn = Button::with_label("📁 Load Music");
+    load_btn.add_css_class("control-btn");
+    load_btn.add_css_class("load-btn");
 
     controls_box.append(&prev_btn);
     controls_box.append(&play_pause_btn);
@@ -109,7 +162,7 @@ fn setup_event_handlers(
 fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox, current_song_label: &Label) {
     let player_clone = player.clone();
     let list_box_clone = list_box.clone();
-     let label_clone = current_song_label.clone();
+    let label_clone = current_song_label.clone();
     
     list_box.connect_row_activated(move |_, row| {
         let index = row.index() as usize;
@@ -189,7 +242,7 @@ fn show_folder_chooser_dialog(
     current_song_label: &Label,
 ) {
     let dialog = FileChooserDialog::new(
-        Some("Where your mus dir?"),
+        Some("🎵 Select Music Folder"),
         Some(window),
         FileChooserAction::SelectFolder,
         &[
@@ -227,18 +280,24 @@ fn update_song_list(player: &Arc<AudioPlayer>, list_box: &ListBox) {
     let songs = player.get_songs();
     for (index, song) in songs.iter().enumerate() {
         let row = gtk::ListBoxRow::new();
-        let box_row = GtkBox::new(Orientation::Horizontal, 5);
+        let box_row = GtkBox::new(Orientation::Horizontal, 10);
+        
+        let number_label = Label::new(Some(&format!("{:02}", index + 1)));
+        number_label.add_css_class("song-number");
+        number_label.set_margin_start(10);
+        number_label.set_width_chars(3);
         
         let label_text = if let Some(name) = song.1.file_stem() {
-            format!("{}. {}", index + 1, name.to_string_lossy())
+            name.to_string_lossy().to_string()
         } else {
-            format!("{}. Unknown", index + 1)
+            "Unknown".to_string()
         };
         
         let label = Label::new(Some(&label_text));
         label.set_halign(gtk::Align::Start);
-        label.set_margin_start(5);
+        label.set_hexpand(true);
         
+        box_row.append(&number_label);
         box_row.append(&label);
         row.set_child(Some(&box_row));
         list_box.append(&row);
@@ -253,12 +312,12 @@ fn load_default_songs(player: &Arc<AudioPlayer>, list_box: &ListBox) {
 fn update_current_song_label(player: &Arc<AudioPlayer>, label: &Label) {
     if let Some(current_song) = player.get_current_song() {
         if let Some(song_name) = current_song.file_stem() {
-            let status = if player.is_playing() { "▶" } else { "⏸" };
+            let status = if player.is_playing() { "🎵 ▶ Playing:" } else { "🎵 ⏸ Paused:" };
             label.set_text(&format!("{} {}", status, song_name.to_string_lossy()));
         } else {
-            label.set_text("Unknown song");
+            label.set_text("🎵 Unknown song");
         }
     } else {
-        label.set_text("No song playing");
+        label.set_text("🎵 No song playing");
     }
 }
