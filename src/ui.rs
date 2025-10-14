@@ -17,16 +17,26 @@ pub fn build_ui(app: &Application) {
     let main_box = create_main_container();
     let list_box = create_song_list();
     let controls_box = create_controls();
+     let current_song_label = create_current_song_label();
 
+    main_box.append(&current_song_label);
     main_box.append(&create_scrolled_window(&list_box));
     main_box.append(&controls_box);
     window.set_child(Some(&main_box));
 
-    setup_event_handlers(&player, &list_box, &controls_box, &window);
+    setup_event_handlers(&player, &list_box, &controls_box, &window, &current_song_label);
 
     load_default_songs(&player, &list_box);
 
     window.present();
+}
+
+fn create_current_song_label() -> Label {
+    let label = Label::new(Some("No song playing"));
+    label.set_halign(gtk::Align::Start);
+    label.set_margin_bottom(10);
+    label.add_css_class("title-4"); // Стиль для выделения
+    label
 }
 
 fn create_window(app: &Application) -> ApplicationWindow {
@@ -83,21 +93,23 @@ fn setup_event_handlers(
     list_box: &ListBox,
     controls_box: &GtkBox,
     window: &ApplicationWindow,
+    current_song_label: &Label,
 ) {
     let prev_btn = controls_box.first_child().unwrap().downcast::<Button>().unwrap();
     let play_pause_btn = prev_btn.next_sibling().unwrap().downcast::<Button>().unwrap();
     let next_btn = play_pause_btn.next_sibling().unwrap().downcast::<Button>().unwrap();
     let load_btn = next_btn.next_sibling().unwrap().downcast::<Button>().unwrap();
 
-    setup_song_click_handler(player, list_box);
-    setup_play_pause_handler(player, &play_pause_btn);
-    setup_prev_next_handlers(player, &prev_btn, &next_btn);
-    setup_load_folder_handler(player, list_box, &load_btn, window);
+    setup_song_click_handler(player, list_box, current_song_label);
+    setup_play_pause_handler(player, &play_pause_btn, current_song_label);
+    setup_prev_next_handlers(player, &prev_btn, &next_btn, current_song_label);
+    setup_load_folder_handler(player, list_box, &load_btn, window, current_song_label);
 }
 
-fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox) {
+fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox, current_song_label: &Label) {
     let player_clone = player.clone();
     let list_box_clone = list_box.clone();
+     let label_clone = current_song_label.clone();
     
     list_box.connect_row_activated(move |_, row| {
         let index = row.index() as usize;
@@ -114,33 +126,42 @@ fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox) {
         }
         
         // Выделяем текущую строку
-        // row.set_focus_child(true);
+        row.set_focus_on_click(true);
         
         player_clone.play_by_index(index);
+        update_current_song_label(&player_clone, &label_clone);
     });
 }
 
-fn setup_play_pause_handler(player: &Arc<AudioPlayer>, button: &Button) {
+fn setup_play_pause_handler(player: &Arc<AudioPlayer>, button: &Button, current_song_label: &Label) {
     let player_clone = player.clone();
+    let label_clone = current_song_label.clone();
     
     button.connect_clicked(move |btn| {
         player_clone.toggle_play_pause();
         
-        // Обновляем текст кнопки
         let label = if player_clone.is_playing() { "⏸" } else { "▶" };
         btn.set_label(label);
+
+        update_current_song_label(&player_clone, &label_clone);
     });
 }
 
-fn setup_prev_next_handlers(player: &Arc<AudioPlayer>, prev_btn: &Button, next_btn: &Button) {
+fn setup_prev_next_handlers(player: &Arc<AudioPlayer>, prev_btn: &Button, next_btn: &Button, current_song_label: &Label) {
     let player_clone = player.clone();
+    let label_clone = current_song_label.clone();
+
     prev_btn.connect_clicked(move |_| {
         player_clone.previous();
+        update_current_song_label(&player_clone, &label_clone);
     });
 
     let player_clone = player.clone();
+    let label_clone = current_song_label.clone();
+
     next_btn.connect_clicked(move |_| {
         player_clone.next();
+        update_current_song_label(&player_clone, &label_clone);
     });
 }
 
@@ -149,13 +170,15 @@ fn setup_load_folder_handler(
     list_box: &ListBox,
     button: &Button,
     window: &ApplicationWindow,
+    current_song_label: &Label,
 ) {
     let player_clone = player.clone();
     let list_box_clone = list_box.clone();
     let window_clone = window.clone();
+    let label_clone = current_song_label.clone();
 
     button.connect_clicked(move |_| {
-        show_folder_chooser_dialog(&player_clone, &list_box_clone, &window_clone);
+        show_folder_chooser_dialog(&player_clone, &list_box_clone, &window_clone, &label_clone);
     });
 }
 
@@ -163,6 +186,7 @@ fn show_folder_chooser_dialog(
     player: &Arc<AudioPlayer>,
     list_box: &ListBox,
     window: &ApplicationWindow,
+    current_song_label: &Label,
 ) {
     let dialog = FileChooserDialog::new(
         Some("Where your mus dir?"),
@@ -176,6 +200,7 @@ fn show_folder_chooser_dialog(
 
     let player = player.clone();
     let list_box = list_box.clone();
+    let label = current_song_label.clone();
 
     dialog.connect_response(move |dialog, response| {
         if response == ResponseType::Accept {
@@ -183,6 +208,7 @@ fn show_folder_chooser_dialog(
                 if let Some(path) = folder.path() {
                     player.load_songs_from_dir(&path.to_string_lossy());
                     update_song_list(&player, &list_box);
+                    update_current_song_label(&player, &label);
                 }
             }
         }
@@ -222,4 +248,17 @@ fn update_song_list(player: &Arc<AudioPlayer>, list_box: &ListBox) {
 fn load_default_songs(player: &Arc<AudioPlayer>, list_box: &ListBox) {
     player.load_songs_from_dir(DEFAULT_MUSIC_DIR);
     update_song_list(player, list_box);
+}
+
+fn update_current_song_label(player: &Arc<AudioPlayer>, label: &Label) {
+    if let Some(current_song) = player.get_current_song() {
+        if let Some(song_name) = current_song.file_stem() {
+            let status = if player.is_playing() { "▶" } else { "⏸" };
+            label.set_text(&format!("{} {}", status, song_name.to_string_lossy()));
+        } else {
+            label.set_text("Unknown song");
+        }
+    } else {
+        label.set_text("No song playing");
+    }
 }
