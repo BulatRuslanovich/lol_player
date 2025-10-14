@@ -55,7 +55,6 @@ impl AudioPlayer {
             }
         }
         
-        // Сортируем песни по имени для удобства
         songs.sort_by(|a, b| a.1.file_name().cmp(&b.1.file_name()));
     }
 
@@ -66,7 +65,6 @@ impl AudioPlayer {
             loop {
                 thread::sleep(Duration::from_millis(500));
                 
-                // Проверяем, закончилась ли текущая песня
                 let should_play_next = {
                     let sink = player_clone.sink.lock().unwrap();
                     let is_playing = player_clone.is_playing.lock().unwrap();
@@ -75,7 +73,6 @@ impl AudioPlayer {
                     sink.empty() && *is_playing && !songs.is_empty()
                 };
                 
-                // Если нужно играть следующую песню
                 if should_play_next {
                     player_clone.next();
                 }
@@ -116,17 +113,17 @@ impl AudioPlayer {
         }
     }
 
-    pub fn pause(&self) {
-        let sink = self.sink.lock().unwrap();
-        sink.pause();
-        *self.is_playing.lock().unwrap() = false;
-    }
+    // pub fn pause(&self) {
+    //     let sink = self.sink.lock().unwrap();
+    //     sink.pause();
+    //     *self.is_playing.lock().unwrap() = false;
+    // }
 
-    pub fn play(&self) {
-        let sink = self.sink.lock().unwrap();
-        sink.play();
-        *self.is_playing.lock().unwrap() = true;
-    }
+    // pub fn play(&self) {
+    //     let sink = self.sink.lock().unwrap();
+    //     sink.play();
+    //     *self.is_playing.lock().unwrap() = true;
+    // }
 
     pub fn next(&self) {
         let current_index = *self.current_index.lock().unwrap();
@@ -162,9 +159,9 @@ impl AudioPlayer {
         self.songs.lock().unwrap().clone()
     }
 
-    pub fn get_current_index(&self) -> Option<usize> {
-        *self.current_index.lock().unwrap()
-    }
+    // pub fn get_current_index(&self) -> Option<usize> {
+    //     *self.current_index.lock().unwrap()
+    // }
 
     pub fn is_playing(&self) -> bool {
         *self.is_playing.lock().unwrap()

@@ -44,7 +44,7 @@ fn setup_styles() {
     
     match css_result {
         Ok(css) => {
-            println!("✅ CSS файл загружен успешно");
+            println!("CSS valid");
             provider.load_from_data(&css);
         }
         Err(e) => {
@@ -64,7 +64,7 @@ fn setup_styles() {
 fn create_window(app: &Application) -> ApplicationWindow {
     ApplicationWindow::builder()
         .application(app)
-        .title("🎵 Lol Player")
+        .title("Lol Player")
         .default_width(800)
         .default_height(600)
         .build()
@@ -81,7 +81,7 @@ fn create_header() -> GtkBox {
     header.add_css_class("header");
     header.set_margin_bottom(10);
     
-    let title = Label::new(Some("🎵 Lol Player"));
+    let title = Label::new(Some("Lol Player"));
     title.add_css_class("header-title");
     title.set_halign(gtk::Align::Center);
     title.set_hexpand(true);
@@ -91,7 +91,7 @@ fn create_header() -> GtkBox {
 }
 
 fn create_current_song_label() -> Label {
-    let label = Label::new(Some("🎵 No song playing"));
+    let label = Label::new(Some("No song playing ;)"));
     label.add_css_class("current-song");
     label.set_halign(gtk::Align::Center);
     label.set_margin_bottom(10);
@@ -167,7 +167,6 @@ fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox, curre
     list_box.connect_row_activated(move |_, row| {
         let index = row.index() as usize;
         
-        // Снимаем выделение со всех строк
         if let Some(first_row) = list_box_clone.first_child() {
             let mut current_row = Some(first_row);
             while let Some(row) = current_row {
@@ -178,7 +177,6 @@ fn setup_song_click_handler(player: &Arc<AudioPlayer>, list_box: &ListBox, curre
             }
         }
         
-        // Выделяем текущую строку
         row.set_focus_on_click(true);
         
         player_clone.play_by_index(index);
@@ -242,7 +240,7 @@ fn show_folder_chooser_dialog(
     current_song_label: &Label,
 ) {
     let dialog = FileChooserDialog::new(
-        Some("🎵 Select Music Folder"),
+        Some("Select Music Folder"),
         Some(window),
         FileChooserAction::SelectFolder,
         &[
@@ -272,7 +270,6 @@ fn show_folder_chooser_dialog(
 }
 
 fn update_song_list(player: &Arc<AudioPlayer>, list_box: &ListBox) {
-    // Очищаем список
     while let Some(child) = list_box.first_child() {
         list_box.remove(&child);
     }
@@ -312,12 +309,12 @@ fn load_default_songs(player: &Arc<AudioPlayer>, list_box: &ListBox) {
 fn update_current_song_label(player: &Arc<AudioPlayer>, label: &Label) {
     if let Some(current_song) = player.get_current_song() {
         if let Some(song_name) = current_song.file_stem() {
-            let status = if player.is_playing() { "🎵 ▶ Playing:" } else { "🎵 ⏸ Paused:" };
+            let status = if player.is_playing() { "▶" } else { "⏸" };
             label.set_text(&format!("{} {}", status, song_name.to_string_lossy()));
         } else {
-            label.set_text("🎵 Unknown song");
+            label.set_text("Unknown song");
         }
     } else {
-        label.set_text("🎵 No song playing");
+        label.set_text("No song playing");
     }
 }

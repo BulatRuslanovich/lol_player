@@ -23,7 +23,6 @@
 @define-color red #f7768e;
 @define-color red1 #db4b4b;
 
-/* Основные стили */
 window {
     background: @bg;
     color: @fg;
@@ -38,7 +37,6 @@ window {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* Заголовок */
 .header {
     background: linear-gradient(135deg, @blue0 0%, @magenta 100%);
     color: @fg;
@@ -56,7 +54,6 @@ window {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Текущая песня */
 .current-song {
     background: linear-gradient(135deg, @purple 0%, @red 100%);
     color: @fg;
@@ -70,7 +67,6 @@ window {
     min-height: 20px;
 }
 
-/* Список песен */
 scrolledwindow {
     background: @bg_popup;
     border-radius: 12px;
@@ -106,7 +102,6 @@ listrow:selected {
     box-shadow: 0 4px 12px rgba(122, 162, 247, 0.3);
 }
 
-/* Кнопки управления */
 .controls-box {
     background: @bg_popup;
     border-radius: 24px;
@@ -168,7 +163,6 @@ listrow:selected {
     box-shadow: 0 6px 16px rgba(157, 124, 216, 0.4);
 }
 
-/* Номера песен */
 .song-number {
     font-size: 12px;
     font-weight: bold;
@@ -181,7 +175,6 @@ listrow:selected .song-number {
     opacity: 1;
 }
 
-/* Анимация для текущей песни */
 @keyframes tokyo-glow {
     0% { 
         box-shadow: 0 4px 16px rgba(187, 154, 247, 0.2);
@@ -197,11 +190,10 @@ listrow:selected .song-number {
     }
 }
 
-.current-song:not([label='🎵 No song playing']) {
+.current-song:not([label='No song playing']) {
     animation: tokyo-glow 3s ease-in-out infinite;
 }
 
-/* Полоса прокрутки */
 scrollbar trough {
     background: @bg_dark;
     border-radius: 8px;
@@ -220,7 +212,6 @@ scrollbar slider:hover {
     background: @cyan;
 }
 
-/* Диалог выбора файла */
 filechooserwidget {
     background: @bg_highlight;
     color: @fg;
@@ -243,7 +234,6 @@ filechooserwidget button:hover {
     background: @cyan;
 }
 
-/* Состояния кнопок */
 .control-btn:disabled {
     background: @dark3;
     color: @fg_gutter;
@@ -251,7 +241,6 @@ filechooserwidget button:hover {
     transform: scale(1);
 }
 
-/* Фокус */
 .control-btn:focus {
     outline: 2px solid @yellow;
     outline-offset: 2px;
